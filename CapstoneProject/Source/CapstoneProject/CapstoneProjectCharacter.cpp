@@ -10,6 +10,12 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "HealthComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "InputAction.h"
+#include "Components/SphereComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 ACapstoneProjectCharacter::ACapstoneProjectCharacter()
 {
@@ -45,6 +51,30 @@ ACapstoneProjectCharacter::ACapstoneProjectCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+	
+	MeleeReach = CreateDefaultSubobject<USphereComponent>(TEXT("MeleeReach"));
+	MeleeReach->SetupAttachment(GetMesh());
+	MeleeReach->SetSphereRadius(MeleeRange);
+	MeleeReach->SetRelativeLocation(FVector(0, 0, 90));
+	MeleeReach->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	MeleeReach->SetCollisionResponseToAllChannels(ECR_Ignore);
+	MeleeReach->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	MeleeReach->SetGenerateOverlapEvents(true);
+	
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+}
+
+void ACapstoneProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EnhancedInputComp = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		if (AttackAction)
+		{
+			EnhancedInputComp->BindAction(AttackAction, ETriggerEvent::Started, this, &ACapstoneProjectCharacter::OnAttack);
+		}
+	}
 }
 
 void ACapstoneProjectCharacter::BeginPlay()
@@ -59,4 +89,59 @@ void ACapstoneProjectCharacter::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
 
 	// stub
+}
+
+void ACapstoneProjectCharacter::OnAttack(const FInputActionValue&)
+{
+	ServerMeleeAttack();
+}
+
+bool ACapstoneProjectCharacter::ServerMeleeAttack_Validate()
+{
+	return true;
+}
+
+void ACapstoneProjectCharacter::ServerMeleeAttack_Implementation()
+{
+	TArray<AActor*> Overlapping;
+	MeleeReach->GetOverlappingActors(Overlapping, ACapstoneProjectCharacter::StaticClass());
+	
+	TSet<AActor*> AlreadyHit;
+	const FVector Origin =GetActorLocation();
+	const FVector Forward=GetActorForwardVector();
+	const float CosThresh= FMath::Cos(FMath::DegreesToRadians(MeleeHalfAngle));
+	
+	bool bAnyHit= false;
+	FVector HitLocation=Origin +Forward * MeleeRange;
+	
+	for (AActor* T:Overlapping)
+	{
+		if (!T|| T== this)continue;
+		
+		
+		if (AlreadyHit.Contains(T)) continue;
+		
+		const FVector To= T->GetActorLocation()-Origin;
+		const float Dist= To.Size();
+		
+		
+		if (Dist>MeleeRange) continue;
+		
+		const FVector Dir=To.GetSafeNormal();
+	
+		if (FVector::DotProduct(Forward,Dir)<CosThresh) continue;
+		
+		AlreadyHit.Add(T);
+		
+		if (UHealthComponent* HC=T->FindComponentByClass<UHealthComponent>())
+		{
+			HC->ApplyDamage(MeleeDamage);
+		}
+		
+		if (!bAnyHit)
+		{
+			bAnyHit= true;
+			HitLocation= T->GetActorLocation();
+		}
+	}
 }

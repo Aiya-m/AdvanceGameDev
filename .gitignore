@@ -80,3 +80,5 @@ DerivedDataCache/*
 *.suo
 *.user
 *.userprefs
+/CapstoneProject/DerivedDataCache
+/CapstoneProject/DerivedDataCache
