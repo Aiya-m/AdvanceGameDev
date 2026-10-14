@@ -82,3 +82,6 @@ DerivedDataCache/*
 *.userprefs
 /CapstoneProject/DerivedDataCache
 /CapstoneProject/DerivedDataCache
+/CapstoneProject/Binaries
+/CapstoneProject/Intermediate
+/CapstoneProject/Saved
