@@ -9,12 +9,15 @@
 AProjectile::AProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	bReplicates = true; // รองรับ Multiplayer
+	bReplicates = true;
+	
+	InitialLifeSpan = 2.f;
 
-	// สร้าง Collision Component
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	
+	//Bind to Event
 	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 	RootComponent = CollisionComp;
 
@@ -24,18 +27,40 @@ AProjectile::AProjectile()
 	ProjectileMovement->InitialSpeed = 3000.f;
 	ProjectileMovement->MaxSpeed = 3000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
-	ProjectileMovement->ProjectileGravityScale = 0.0f; // กระสุนวิ่งตรงไม่ย้อย
+	ProjectileMovement->ProjectileGravityScale = 0.0f; // bullet go straight
+}
+
+void AProjectile::SetDamage(float newdamage)
+{
+	Damage = newdamage;
+}
+
+void AProjectile::BulletMakeShot_Implementation(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherActor && OtherActor != this && OtherActor != GetInstigator())
+	{
+		if (HasAuthority())
+		{
+			UGameplayStatics::ApplyDamage(
+				OtherActor,
+				Damage,
+				GetInstigatorController(),
+				this,
+				UDamageType::StaticClass()
+			);
+			Destroy();
+		}
+		
+		// if (ImpactFX)
+		// {
+		// 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactFX, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+		// }
+		
+		Destroy();
+	}
 }
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// เช็คว่าไม่ได้ยิงใส่ตัวเอง และ มี Actor ที่โดนยิง
-	if (OtherActor && OtherActor != this && OtherActor != GetInstigator())
-	{
-		// ทำ Damage ใส่เป้าหมาย
-		UGameplayStatics::ApplyDamage(OtherActor, 25.0f, GetInstigatorController(), this, UDamageType::StaticClass());
-
-		// ลบลูกกระสุนออกเมื่อชน
-		Destroy();
-	}
+	BulletMakeShot(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Projectile.h"
 #include "Weapon.generated.h"
 
 UCLASS()
@@ -14,11 +15,57 @@ class CAPSTONEPROJECT_API AWeapon : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AWeapon();
+	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void Fire();
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USceneComponent* RootComp;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* WeaponMeshStatic;
+
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	// USkeletalMeshComponent* WeaponMeshSkeletal;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
+	TSubclassOf<AProjectile> ProjectileClass;
+	
+	UFUNCTION(Server, Reliable)
+	void Server_Fire();
+	
+	// UFUNCTION(NetMulticast, Reliable)
+	// void Multicast_PlayFireFX(FVector HitLocation, bool bDidHit);
+	
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	FVector GetMuzzleLocation() const;
 
+	// ฟังก์ชั่นดึงทิศทางปลายกระบอกปืน
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	FVector GetMuzzleForwardVector() const;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
+	float BaseDamage = 20.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
+	float FireRate = 0.2f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
+	float WeaponRange = 5000.0f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
+	FName MuzzleSocketName = FName("Muzzle");
+
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Visuals")
+	// USoundBase* FireSound;
+	//
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Visuals")
+	// UNiagaraSystem* MuzzleFX;
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
