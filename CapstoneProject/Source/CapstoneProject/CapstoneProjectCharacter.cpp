@@ -94,7 +94,31 @@ void ACapstoneProjectCharacter::OnAttack(const FInputActionValue&)
 	ServerMeleeAttack();
 }
 
+void ACapstoneProjectCharacter::ServerFireGun_Implementation()
+{
+	// if (ProjectileClass && CurrentWeapon)
+	// {
+	// 	// ดึงตำแหน่งและองศาจาก Socket ปลายปืน
+	// 	FVector SpawnLocation = CurrentWeapon->GetSocketLocation(TEXT("Muzzle"));
+	// 	FRotator SpawnRotation = CurrentWeapon->GetSocketRotation(TEXT("Muzzle"));
+	//
+	// 	FActorSpawnParameters SpawnParams;
+	// 	SpawnParams.Owner = this;
+	// 	SpawnParams.Instigator = GetInstigator();
+	//
+	// 	// Spawn กระสุนบน Server
+	// 	UWorld* World = GetWorld();
+	// 	if (World)
+	// 	{
+	// 		World->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+	// 	}
+	// }
+}
 
+bool ACapstoneProjectCharacter::ServerFireGun_Validate()
+{
+	return true;
+}
 
 bool ACapstoneProjectCharacter::ServerMeleeAttack_Validate()
 {

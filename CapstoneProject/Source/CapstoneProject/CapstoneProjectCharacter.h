@@ -82,6 +82,9 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerMeleeAttack();
 	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFireGun();
+	
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* AttackAction;
 	
@@ -91,5 +94,11 @@ public:
 	
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<class AProjectile> ProjectileClass;
+	
+	// UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	// class AWeapon* CurrentWeapon;
 };
 
