@@ -145,3 +145,17 @@ void ACapstoneProjectCharacter::ServerMeleeAttack_Implementation()
 		}
 	}
 }
+
+float ACapstoneProjectCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+{
+	const float Applied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	if (!HealthComponent || HealthComponent->IsDead())
+	{
+		return Applied;
+	}
+	
+	HealthComponent->ApplyDamage(DamageAmount);
+	
+	return Applied;
+}

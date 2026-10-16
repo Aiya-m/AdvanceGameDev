@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Engine/DamageEvents.h"
+#include "CapstoneProjectGameMode.h"
 #include "CapstoneProjectCharacter.generated.h"
 
 class UCameraComponent;
@@ -84,6 +86,8 @@ public:
 	UInputAction* AttackAction;
 	
 	void OnAttack(const FInputActionValue& Value);
+	
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
