@@ -60,8 +60,6 @@ ACapstoneProjectCharacter::ACapstoneProjectCharacter()
 	MeleeReach->SetCollisionResponseToAllChannels(ECR_Ignore);
 	MeleeReach->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	MeleeReach->SetGenerateOverlapEvents(true);
-	
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 void ACapstoneProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -95,6 +93,8 @@ void ACapstoneProjectCharacter::OnAttack(const FInputActionValue&)
 {
 	ServerMeleeAttack();
 }
+
+
 
 bool ACapstoneProjectCharacter::ServerMeleeAttack_Validate()
 {
