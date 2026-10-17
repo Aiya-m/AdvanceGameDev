@@ -79,21 +79,27 @@ public:
 	// UPROPERTY(EditAnywhere, Category="WeaponGun")
 	// class USkeletalMeshComponent* WeaponMesh;
 	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMeleeAttack();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EquipWeapon(AWeapon* NewWeapon);
 	
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerFireGun();
+	void ServerMeleeAttack();
 	
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* AttackAction;
 	
-	void OnAttack(const FInputActionValue& Value);
+	void OnAttack();
+	void StopAttack();
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", Replicated)
+	AWeapon* Weapon;
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<class AProjectile> ProjectileClass;

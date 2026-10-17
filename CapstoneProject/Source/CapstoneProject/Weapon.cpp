@@ -21,6 +21,7 @@ AWeapon::AWeapon()
 	WeaponMeshStatic = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMeshStatic"));
 	WeaponMeshStatic->SetupAttachment(RootComp);
 	WeaponMeshStatic->SetCollisionProfileName(TEXT("NoCollision"));
+	SetBullet();
 }
 
 // Called when the game starts or when spawned
@@ -30,6 +31,40 @@ void AWeapon::BeginPlay()
 	
 }
 
+void AWeapon::fire()
+{
+	FVector SpawnLocation = GetMuzzleLocation();
+	FRotator SpawnRotation = GetMuzzleForwardVector().Rotation();
+	Server_fire(SpawnLocation, SpawnRotation);
+}
+
+void AWeapon::SetBullet()
+{
+	bullets = WeaponMagazine;
+}
+
+void AWeapon::FireBullet()
+{
+	if (bullets > 0)
+	{
+		bullets--;
+		return;
+	}
+	bullets = 0;
+	return;
+}
+
+void AWeapon::AddBullet(int32 bullet)
+{
+	if (bullets >= WeaponMagazine)
+	{
+		bullets = WeaponMagazine;
+		return;
+	}
+	bullets += bullet;
+	return;
+}
+
 // Called every frame
 void AWeapon::Tick(float DeltaTime)
 {
@@ -37,18 +72,11 @@ void AWeapon::Tick(float DeltaTime)
 
 }
 
-void AWeapon::Fire()
+void AWeapon::Server_fire_Implementation(FVector SpawnLocation, FRotator SpawnRotation)
 {
-	Server_Fire();
-}
-
-void AWeapon::Server_Fire_Implementation()
-{
-	if (ProjectileClass)
+	if (HasAuthority() && ProjectileClass)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ProjectileClass"));
-		FVector SpawnLocation = GetMuzzleLocation();
-		FRotator SpawnRotator = GetMuzzleForwardVector().Rotation();
 		// FVector End = Start + (ForwardVector * WeaponRange);
 	
 		FActorSpawnParameters SpawnParams;
@@ -59,18 +87,51 @@ void AWeapon::Server_Fire_Implementation()
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			AProjectile* SpawnedBullet = World->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotator, SpawnParams);
-			
-			if (SpawnedBullet)
+			if (bullets > 0)
 			{
-				SpawnedBullet->SetDamage(BaseDamage);
-				UE_LOG(LogTemp, Warning, TEXT("Spawnbullet"));
+				AProjectile* SpawnedBullet = World->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+                			
+                if (SpawnedBullet)
+                {
+                	SpawnedBullet->SetDamage(BaseDamage);
+                	FireBullet();
+                	UE_LOG(LogTemp, Warning, TEXT("Spawnbullet"));
+                }
+			}
+			 else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Out of Bullet"));
 			}
 		}	
 	}
 	
 	// Multicast_PlayFireFX();
 }
+
+void AWeapon::StartFire()
+{
+	fire(); 
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().SetTimer(
+			FireTimerHandle,
+			this,
+			&AWeapon::fire,
+			FireRate,
+			true
+		);
+	}
+}
+
+void AWeapon::StopFire()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(FireTimerHandle);
+	}
+}
+
 
 FVector AWeapon::GetMuzzleLocation() const
 {

@@ -6,6 +6,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+
 AProjectile::AProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -48,6 +49,7 @@ void AProjectile::BulletMakeShot_Implementation(UPrimitiveComponent* HitComp, AA
 				this,
 				UDamageType::StaticClass()
 			);
+			
 			Destroy();
 		}
 		

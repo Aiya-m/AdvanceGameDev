@@ -16,6 +16,9 @@
 #include "Components/SphereComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Weapon.h"
+
+AWeapon* Weapon;
 
 ACapstoneProjectCharacter::ACapstoneProjectCharacter()
 {
@@ -71,6 +74,10 @@ void ACapstoneProjectCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 		if (AttackAction)
 		{
 			EnhancedInputComp->BindAction(AttackAction, ETriggerEvent::Started, this, &ACapstoneProjectCharacter::OnAttack);
+            
+			// ปล่อยปุ่ม -> หยุดยิง
+			EnhancedInputComp->BindAction(AttackAction, ETriggerEvent::Completed, this, &ACapstoneProjectCharacter::StopAttack);
+			EnhancedInputComp->BindAction(AttackAction, ETriggerEvent::Canceled, this, &ACapstoneProjectCharacter::StopAttack);
 		}
 	}
 }
@@ -89,35 +96,44 @@ void ACapstoneProjectCharacter::Tick(float DeltaSeconds)
 	// stub
 }
 
-void ACapstoneProjectCharacter::OnAttack(const FInputActionValue&)
+void ACapstoneProjectCharacter::OnAttack()
 {
-	ServerMeleeAttack();
+	if (Weapon)
+	{
+		UE_LOG(LogTemp, Error, TEXT("OnAttack"));
+		Weapon->StartFire();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("OnAttack Failed: Weapon is NULL! Please equip a weapon first."));
+	}
 }
 
-void ACapstoneProjectCharacter::ServerFireGun_Implementation()
+void ACapstoneProjectCharacter::StopAttack()
 {
-	// if (ProjectileClass && CurrentWeapon)
-	// {
-	// 	// ดึงตำแหน่งและองศาจาก Socket ปลายปืน
-	// 	FVector SpawnLocation = CurrentWeapon->GetSocketLocation(TEXT("Muzzle"));
-	// 	FRotator SpawnRotation = CurrentWeapon->GetSocketRotation(TEXT("Muzzle"));
-	//
-	// 	FActorSpawnParameters SpawnParams;
-	// 	SpawnParams.Owner = this;
-	// 	SpawnParams.Instigator = GetInstigator();
-	//
-	// 	// Spawn กระสุนบน Server
-	// 	UWorld* World = GetWorld();
-	// 	if (World)
-	// 	{
-	// 		World->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
-	// 	}
-	// }
+	if (Weapon)
+	{
+		Weapon->StopFire();
+	}
 }
 
-bool ACapstoneProjectCharacter::ServerFireGun_Validate()
+void ACapstoneProjectCharacter::EquipWeapon(AWeapon* NewWeapon)
 {
-	return true;
+	if (!NewWeapon) return;
+
+	Weapon = NewWeapon;
+	Weapon->SetOwner(this);
+	Weapon->SetInstigator(this);
+
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	Weapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
+}
+
+void ACapstoneProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ACapstoneProjectCharacter, Weapon);
 }
 
 bool ACapstoneProjectCharacter::ServerMeleeAttack_Validate()

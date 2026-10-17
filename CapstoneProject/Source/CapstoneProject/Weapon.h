@@ -17,7 +17,16 @@ public:
 	AWeapon();
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual void Fire();
+	void FireBullet();
+	
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void StartFire();
+	
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void StopFire();
+	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void AddBullet(int32 bullet);
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* RootComp;
@@ -35,8 +44,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
 	TSubclassOf<AProjectile> ProjectileClass;
 	
+	UFUNCTION()
+	void fire();
+	
 	UFUNCTION(Server, Reliable)
-	void Server_Fire();
+	void Server_fire(FVector SpawnLocation, FRotator SpawnRotation);
+	
+	FTimerHandle FireTimerHandle;
 	
 	// UFUNCTION(NetMulticast, Reliable)
 	// void Multicast_PlayFireFX(FVector HitLocation, bool bDidHit);
@@ -52,10 +66,19 @@ protected:
 	float BaseDamage = 20.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
-	float FireRate = 0.2f;
+	float FireRate = 0.02f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
 	float WeaponRange = 5000.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
+	int32 WeaponMagazine = 20;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
+	int32 bullets = WeaponMagazine;
+	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void SetBullet();
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
 	FName MuzzleSocketName = FName("Muzzle");
