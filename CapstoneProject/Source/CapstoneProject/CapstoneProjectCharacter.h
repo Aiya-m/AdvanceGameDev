@@ -60,7 +60,7 @@ public:
 	float MeleeHalfAngle = 60.f;
 	
 	UPROPERTY(EditAnywhere, Category="Melee")
-	float MeleeDamage = 25.f;
+	float MeleeDamage = 5.f;
 	
 	UPROPERTY(VisibleAnywhere, Category="Melee")
 	class USphereComponent* MeleeReach;

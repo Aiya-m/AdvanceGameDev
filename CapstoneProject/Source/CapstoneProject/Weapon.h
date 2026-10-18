@@ -26,7 +26,7 @@ public:
 	void StopFire();
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void AddBullet(int32 bullet);
+	bool AddBullet(int32 bullet);
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* RootComp;
@@ -79,6 +79,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
 	int32 bullets = WeaponMagazine;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
+	int32 SpareAmmo = 30;
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void SetBullet();
