@@ -22,8 +22,10 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		Health = MaxHealth;
+	}
 }
 
 
@@ -66,3 +68,27 @@ bool UHealthComponent::IsDead() const
 	return Health <= 0.f;
 }
 
+void UHealthComponent::Heal(float Amount)
+{
+	if (!GetOwner() || !GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	if (Amount <= 0.f || IsDead() || MaxHealth <= 0.f)
+	{
+		return;
+	}
+
+	Health = FMath::Clamp(Health + Amount,0.f,MaxHealth);
+}
+
+float UHealthComponent::GetMaxHealth() const
+{
+	return MaxHealth;
+}
+
+float UHealthComponent::GetCurrentHealth() const
+{
+	return Health;
+}

@@ -15,7 +15,10 @@
 #include "InputAction.h"
 #include "Components/SphereComponent.h"
 #include "EnhancedInputComponent.h"
+#include "EnemyProjectile.h"
+#include "GameFramework/Actor.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Weapon.h"
 
 AWeapon* Weapon;
@@ -198,4 +201,56 @@ float ACapstoneProjectCharacter::TakeDamage(float DamageAmount, struct FDamageEv
 	HealthComponent->ApplyDamage(DamageAmount);
 	
 	return Applied;
+}
+
+FGenericTeamId ACapstoneProjectCharacter::GetGenericTeamId() const
+{
+	return FGenericTeamId(0);
+}
+
+
+void ACapstoneProjectCharacter::FireProjectileAt(AActor* Target)
+{
+	
+	if (!HasAuthority() || !IsValid(Target)){return;}
+
+	if (!EnemyProjectileClass)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("ProjectileClass is not assigned!"));
+		return;
+	}
+
+	const float Now = GetWorld()->GetTimeSeconds();
+
+	if (Now - LastAttackTime < MinAttackInterval)
+	{
+		return;
+	}
+
+	LastAttackTime = Now;
+
+	const FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.f + FVector(0.f, 0.f, 50.f);
+
+	const FVector Direction = (Target->GetActorLocation() - SpawnLocation).GetSafeNormal();
+
+	const FRotator SpawnRotation = Direction.Rotation();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AEnemyProjectile* Projectile = GetWorld()->SpawnActor<AEnemyProjectile>(EnemyProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+
+	if (Projectile)
+	{
+		Projectile->InitializeComponent(this, 10.f);
+
+		Projectile->SetActorRotation(SpawnRotation);
+
+		if (UProjectileMovementComponent* Movement = Projectile->FindComponentByClass<UProjectileMovementComponent>())
+		{
+			Movement->Velocity = Direction * Movement->InitialSpeed;
+		}
+	}
 }
