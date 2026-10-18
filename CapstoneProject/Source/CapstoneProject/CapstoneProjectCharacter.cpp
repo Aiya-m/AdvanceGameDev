@@ -94,9 +94,11 @@ void ACapstoneProjectCharacter::BeginPlay()
 void ACapstoneProjectCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-
+	
 	// stub
 }
+
+
 
 void ACapstoneProjectCharacter::OnAttack()
 {
