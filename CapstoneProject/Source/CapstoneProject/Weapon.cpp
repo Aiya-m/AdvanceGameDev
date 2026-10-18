@@ -54,10 +54,10 @@ void AWeapon::FireBullet()
 	return;
 }
 
-void AWeapon::AddBullet(int32 bullet)
+bool AWeapon::AddBullet(int32 bullet)
 {
-	WeaponMagazine += bullet;
-	return;
+	SpareAmmo += bullet;
+	return true;
 }
 
 // Called every frame
