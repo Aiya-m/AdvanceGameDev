@@ -56,12 +56,7 @@ void AWeapon::FireBullet()
 
 void AWeapon::AddBullet(int32 bullet)
 {
-	if (bullets >= WeaponMagazine)
-	{
-		bullets = WeaponMagazine;
-		return;
-	}
-	bullets += bullet;
+	WeaponMagazine += bullet;
 	return;
 }
 
