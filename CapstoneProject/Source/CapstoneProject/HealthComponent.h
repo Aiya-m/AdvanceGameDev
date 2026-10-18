@@ -34,9 +34,16 @@ public:
 	float GetHealthPercent() const;
 	
 	UFUNCTION(BlueprintPure, Category="Health")
+	float GetMaxHealth() const;
+	
+	UFUNCTION(BlueprintPure, Category="Health")
+	float GetCurrentHealth() const;
+	
+	UFUNCTION(BlueprintPure, Category="Health")
 	bool IsDead() const;
 	
-	
+	UFUNCTION(BlueprintCallable, Category="Health")
+	void Heal(float Amount);
 
 protected:
 	// Called when the game starts

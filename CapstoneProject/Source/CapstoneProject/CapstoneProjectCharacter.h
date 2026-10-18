@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "Engine/DamageEvents.h"
 #include "CapstoneProjectGameMode.h"
+#include "GenericTeamAgentInterface.h"
 #include "CapstoneProjectCharacter.generated.h"
 
 class UCameraComponent;
@@ -18,7 +19,7 @@ class UInputAction;
  *  A controllable top-down perspective character
  */
 UCLASS(abstract)
-class ACapstoneProjectCharacter : public ACharacter
+class ACapstoneProjectCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -93,6 +94,11 @@ public:
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	
+	virtual FGenericTeamId GetGenericTeamId() const override;
+	
+	UFUNCTION(BlueprintCallable, Category="Combat")
+	void FireProjectileAt(AActor* Target);
+	
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
@@ -106,5 +112,13 @@ protected:
 	
 	// UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	// class AWeapon* CurrentWeapon;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Combat")
+	float MinAttackInterval = 1.0f;
+	
+	float LastAttackTime = -1000.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TSubclassOf<class AEnemyProjectile> EnemyProjectileClass;
 };
 

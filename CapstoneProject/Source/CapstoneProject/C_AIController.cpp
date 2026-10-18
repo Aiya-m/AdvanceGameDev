@@ -4,6 +4,7 @@
 #include "C_AIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 AC_AIController::AC_AIController()
@@ -13,7 +14,10 @@ AC_AIController::AC_AIController()
 	SightConfig->SightRadius = 1200.f;
 	SightConfig->LoseSightRadius = 1500.f;
 	SightConfig->PeripheralVisionAngleDegrees = 60.f;
-	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	
+	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+	SightConfig->DetectionByAffiliation.bDetectNeutrals = false;
+	SightConfig->DetectionByAffiliation.bDetectFriendlies = false;
 	
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception")));
 	
@@ -23,6 +27,15 @@ AC_AIController::AC_AIController()
 void AC_AIController::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	const APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (PlayerPawn)
+	{
+		const ETeamAttitude::Type Att = GetTeamAttitudeTowards(*PlayerPawn);
+		
+		UE_LOG(LogTemp, Warning, TEXT("AI TEAM: %d | ATTITUDE TO PLAYER: %s"),
+		(int32)GetGenericTeamId().GetId(), Att == ETeamAttitude::Hostile ? TEXT("Hostile") : Att == ETeamAttitude::Friendly ? TEXT("Friendly") : TEXT("Neutral"));
+	}
 	
 	if (UAIPerceptionComponent* Perception = GetPerceptionComponent())
 	{
@@ -61,4 +74,9 @@ void AC_AIController::OnPossess(class APawn* InPawn)
 	{
 		RunBehaviorTree(BehaviorTreeAsset);
 	}
+}
+
+FGenericTeamId AC_AIController::GetGenericTeamId() const
+{
+	return FGenericTeamId(1);
 }

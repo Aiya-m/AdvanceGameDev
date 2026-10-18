@@ -23,6 +23,8 @@ public:
 	
 	virtual void OnPossess(class APawn* InPawn) override;
 	
+	virtual FGenericTeamId GetGenericTeamId() const override;
+	
 protected:
 	virtual void BeginPlay() override;
 	
