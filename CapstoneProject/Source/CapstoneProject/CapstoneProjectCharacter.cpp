@@ -74,8 +74,7 @@ void ACapstoneProjectCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 		if (AttackAction)
 		{
 			EnhancedInputComp->BindAction(AttackAction, ETriggerEvent::Started, this, &ACapstoneProjectCharacter::OnAttack);
-            
-			// ปล่อยปุ่ม -> หยุดยิง
+
 			EnhancedInputComp->BindAction(AttackAction, ETriggerEvent::Completed, this, &ACapstoneProjectCharacter::StopAttack);
 			EnhancedInputComp->BindAction(AttackAction, ETriggerEvent::Canceled, this, &ACapstoneProjectCharacter::StopAttack);
 		}
