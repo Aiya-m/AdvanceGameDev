@@ -21,6 +21,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Weapon.h"
 #include "CapstoneProjectGameMode.h"
+#include "Perception/AISense_Hearing.h"
+#include "Perception/AISense_Damage.h"
 
 AWeapon* Weapon;
 
@@ -100,8 +102,17 @@ void ACapstoneProjectCharacter::BeginPlay()
 
 void ACapstoneProjectCharacter::Tick(float DeltaSeconds)
 {
-    Super::Tick(DeltaSeconds);
-	// stub
+	Super::Tick(DeltaSeconds);
+
+	if (!HasAuthority()){return;}
+	if (!IsPlayerControlled()){return;}
+	if (GetVelocity().SizeSquared() < 1.f){return;}
+	
+	FootstepTimer += DeltaSeconds;
+	if (FootstepTimer < FootStepInterval){return;}
+	FootstepTimer = 0.f;
+	
+	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this, FootStepRange, TEXT("Footstep"));
 }
 
 void ACapstoneProjectCharacter::OnAttack()
@@ -110,6 +121,7 @@ void ACapstoneProjectCharacter::OnAttack()
 	{
 		UE_LOG(LogTemp, Error, TEXT("OnAttack"));
 		Weapon->StartFire();
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this, BulletSoundRange, TEXT("Gun Shot"));
 	}
 	else
 	{
@@ -210,6 +222,7 @@ void ACapstoneProjectCharacter::ServerMeleeAttack_Implementation()
 float ACapstoneProjectCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	const float Applied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	UAISense_Damage::ReportDamageEvent(GetWorld(), this, EventInstigator ? EventInstigator->GetPawn() : nullptr, DamageAmount, GetActorLocation(), GetActorLocation());
 	
 	if (!HealthComponent || HealthComponent->IsDead())
 	{

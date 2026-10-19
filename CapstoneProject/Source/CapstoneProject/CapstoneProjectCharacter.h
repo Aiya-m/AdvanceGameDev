@@ -130,5 +130,16 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TSubclassOf<class AEnemyProjectile> EnemyProjectileClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Perception")
+    	float FootStepInterval = 0.4f;
+    	
+    	UPROPERTY(EditDefaultsOnly, Category="Perception")
+    	float FootStepRange = 900.f;
+    	
+    	UPROPERTY(EditDefaultsOnly, Category="Perception")
+    	float BulletSoundRange = 2500.f;
+    	
+    	float FootstepTimer = 0.f;
 };
 

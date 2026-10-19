@@ -4,6 +4,12 @@
 #include "C_AIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AIPerceptionSystem.h"
+#include "Perception/AISenseConfig_Hearing.h"
+#include "Perception/AISenseConfig_Damage.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AISense_Hearing.h"
+#include "Perception/AISense_Damage.h"
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -22,6 +28,21 @@ AC_AIController::AC_AIController()
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception")));
 	
 	GetPerceptionComponent()->ConfigureSense(*SightConfig);
+	
+	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing"));
+	HearingConfig->HearingRange = 3000.f;
+	HearingConfig->SetMaxAge(8.f);
+	HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+	HearingConfig->DetectionByAffiliation.bDetectNeutrals = false;
+	HearingConfig->DetectionByAffiliation.bDetectFriendlies = false;
+	
+	GetPerceptionComponent()->ConfigureSense(*HearingConfig);
+	
+	DamageConfig = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage"));
+	DamageConfig->SetMaxAge(8.f);
+	GetPerceptionComponent()->ConfigureSense(*DamageConfig);
+	
+	GetPerceptionComponent()->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
 void AC_AIController::BeginPlay()
@@ -56,15 +77,32 @@ void AC_AIController::OnTargetSensed(AActor* Actor, FAIStimulus Stimulus)
     {
         return;
     }
-
-    if (Stimulus.WasSuccessfullySensed())
-    {
-        BB->SetValueAsObject(TargetActorKey, Actor);
-    }
-    else
-    {
-        BB->ClearValue(TargetActorKey);
-    }
+	
+	const TSubclassOf<UAISense> Sense = UAIPerceptionSystem::GetSenseClassForStimulus(this, Stimulus);
+	
+	if (Sense == UAISense_Sight::StaticClass())
+	{
+		if (Stimulus.WasSuccessfullySensed())
+		{
+			BB->SetValueAsObject(TargetActorKey, Actor);
+		}
+		else
+		{
+			BB->ClearValue(TargetActorKey);
+		}
+		return;
+	}
+	
+	if (Sense == UAISense_Damage::StaticClass())
+	{
+		BB->SetValueAsObject(TargetActorKey, Actor);
+		return;
+	}
+	
+	if (Sense == UAISense_Hearing::StaticClass())
+	{
+		BB->SetValueAsVector(InvestigateLocationKey, Stimulus.StimulusLocation);
+	}
 }
 
 void AC_AIController::OnPossess(class APawn* InPawn)

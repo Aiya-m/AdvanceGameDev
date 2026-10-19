@@ -9,6 +9,8 @@
 #include "C_AIController.generated.h"
 
 class UAISenseConfig_Sight;
+class UAISenseConfig_Hearing;
+class UAISenseConfig_Damage;
 
 /**
  * 
@@ -37,6 +39,18 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	UAISenseConfig_Sight* SightConfig;
 	
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+	UAISenseConfig_Hearing* HearingConfig;
+	
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+	UAISenseConfig_Damage* DamageConfig;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	FName TargetActorKey = TEXT("TargetActor");
+	
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	FName DamageLocationKey = TEXT("LastDamageLocation");
+	
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	FName InvestigateLocationKey = TEXT("InvestigateLocation");
 };
