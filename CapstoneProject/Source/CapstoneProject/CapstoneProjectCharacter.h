@@ -37,7 +37,7 @@ public:
 
 	/** Constructor */
 	ACapstoneProjectCharacter();
-
+	
 	/** Initialization */
 	virtual void BeginPlay() override;
 
@@ -89,8 +89,12 @@ public:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* AttackAction;
 	
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* ReloadAction;
+	
 	void OnAttack();
 	void StopAttack();
+	void Reload();
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	
@@ -99,11 +103,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Combat")
 	void FireProjectileAt(AActor* Target);
 	
-protected:
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", Replicated)
 	AWeapon* Weapon;
+	
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SwapWeapon(int32 WeaponIndex);
+	
+protected:
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_SwapWeapon(int32 WeaponIndex);
+	
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	

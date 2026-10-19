@@ -7,6 +7,8 @@
 #include "Projectile.h"
 #include "Weapon.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChangedSignature, int32, NewBullets, int32, Magazine);
+
 UCLASS()
 class CAPSTONEPROJECT_API AWeapon : public AActor
 {
@@ -15,6 +17,9 @@ class CAPSTONEPROJECT_API AWeapon : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AWeapon();
+	
+	UPROPERTY(BlueprintAssignable, Category = "Weapon Events")
+	FOnAmmoChangedSignature OnAmmoChanged;
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void FireBullet();
@@ -28,6 +33,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	bool AddBullet(int32 bullet);
 	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void Reload();
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* RootComp;
 	
@@ -39,10 +47,18 @@ public:
 
 protected:
 	// Called when the game starts or when spawned
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
 	TSubclassOf<AProjectile> ProjectileClass;
+	
+	UFUNCTION()
+	void OnRep_Bullets();
+
+	UFUNCTION()
+	void OnRep_SpareAmmo();
 	
 	UFUNCTION()
 	void fire();
@@ -77,10 +93,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
 	int32 WeaponMagazine = 20;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
+	UPROPERTY(ReplicatedUsing = OnRep_Bullets, EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
 	int32 bullets = WeaponMagazine;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
+	UPROPERTY(ReplicatedUsing = OnRep_SpareAmmo, EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
 	int32 SpareAmmo = 30;
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")

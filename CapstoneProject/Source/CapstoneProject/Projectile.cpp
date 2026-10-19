@@ -2,9 +2,13 @@
 
 
 #include "Projectile.h"
+
+#include "CapstoneProjectCharacter.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "HealthComponent.h"
+#include "Weapon.h"
 
 
 AProjectile::AProjectile()
@@ -40,25 +44,20 @@ void AProjectile::BulletMakeShot_Implementation(UPrimitiveComponent* HitComp, AA
 {
 	if (OtherActor && OtherActor != this && OtherActor != GetInstigator())
 	{
+		AController* InstigatorController = GetInstigator() ? GetInstigator()->GetController() : nullptr;
 		if (HasAuthority())
 		{
 			UGameplayStatics::ApplyDamage(
 				OtherActor,
 				Damage,
-				GetInstigatorController(),
+				InstigatorController,
 				this,
 				UDamageType::StaticClass()
 			);
 			
 			Destroy();
+			return;
 		}
-		
-		// if (ImpactFX)
-		// {
-		// 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactFX, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
-		// }
-		
-		Destroy();
 	}
 }
 

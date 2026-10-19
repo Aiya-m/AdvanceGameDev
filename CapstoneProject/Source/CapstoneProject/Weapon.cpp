@@ -6,6 +6,7 @@
 #include "NavigationSystemTypes.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -22,6 +23,14 @@ AWeapon::AWeapon()
 	WeaponMeshStatic->SetupAttachment(RootComp);
 	WeaponMeshStatic->SetCollisionProfileName(TEXT("NoCollision"));
 	SetBullet();
+}
+
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWeapon, bullets);
+	DOREPLIFETIME(AWeapon, SpareAmmo);
 }
 
 // Called when the game starts or when spawned
@@ -43,21 +52,28 @@ void AWeapon::SetBullet()
 	bullets = WeaponMagazine;
 }
 
-void AWeapon::FireBullet()
-{
-	if (bullets > 0)
-	{
-		bullets--;
-		return;
-	}
-	bullets = 0;
-	return;
-}
-
 bool AWeapon::AddBullet(int32 bullet)
 {
+	if (WeaponName == "Pistol") {return false;}
 	SpareAmmo += bullet;
+	OnAmmoChanged.Broadcast(bullets, SpareAmmo);
 	return true;
+}
+
+void AWeapon::Reload()
+{
+	if (WeaponName == "Pistol") {return;}
+	int requireAmmo = WeaponMagazine-bullets;
+	if (SpareAmmo >= requireAmmo)
+	{
+		bullets += requireAmmo;
+		SpareAmmo -= requireAmmo;
+	} else if (SpareAmmo < requireAmmo)
+	{
+		bullets += SpareAmmo;
+		SpareAmmo = 0;
+	}
+	OnAmmoChanged.Broadcast(bullets, SpareAmmo);
 }
 
 // Called every frame
@@ -101,6 +117,31 @@ void AWeapon::Server_fire_Implementation(FVector SpawnLocation, FRotator SpawnRo
 	}
 	
 	// Multicast_PlayFireFX();
+}
+
+void AWeapon::FireBullet()
+{
+	if (bullets-1 == 0)
+	{
+		bullets = 0;
+		OnAmmoChanged.Broadcast(bullets, SpareAmmo);
+		return;
+	}
+	bullets--;
+	OnAmmoChanged.Broadcast(bullets, SpareAmmo);
+	return;
+}
+
+void AWeapon::OnRep_Bullets()
+{
+	UE_LOG(LogTemp, Warning, TEXT("bulletchange"));
+	OnAmmoChanged.Broadcast(bullets, SpareAmmo);
+}
+
+void AWeapon::OnRep_SpareAmmo()
+{
+	UE_LOG(LogTemp, Warning, TEXT("spareammochange"));
+	OnAmmoChanged.Broadcast(bullets, SpareAmmo);
 }
 
 void AWeapon::StartFire()

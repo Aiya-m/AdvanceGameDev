@@ -20,6 +20,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Weapon.h"
+#include "CapstoneProjectGameMode.h"
 
 AWeapon* Weapon;
 
@@ -83,6 +84,10 @@ void ACapstoneProjectCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			EnhancedInputComp->BindAction(AttackAction, ETriggerEvent::Completed, this, &ACapstoneProjectCharacter::StopAttack);
 			EnhancedInputComp->BindAction(AttackAction, ETriggerEvent::Canceled, this, &ACapstoneProjectCharacter::StopAttack);
 		}
+		if (ReloadAction)
+		{
+			EnhancedInputComp->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &ACapstoneProjectCharacter::Reload);
+		}
 	}
 }
 
@@ -96,11 +101,8 @@ void ACapstoneProjectCharacter::BeginPlay()
 void ACapstoneProjectCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-	
 	// stub
 }
-
-
 
 void ACapstoneProjectCharacter::OnAttack()
 {
@@ -123,13 +125,26 @@ void ACapstoneProjectCharacter::StopAttack()
 	}
 }
 
+void ACapstoneProjectCharacter::Reload()
+{
+	Weapon->Reload();
+}
+
 void ACapstoneProjectCharacter::EquipWeapon(AWeapon* NewWeapon)
 {
 	if (!NewWeapon) return;
+	if (Weapon && Weapon != NewWeapon)
+	{
+		Weapon->SetActorHiddenInGame(true);
+		Weapon->SetActorEnableCollision(false);
+	}
 
 	Weapon = NewWeapon;
 	Weapon->SetOwner(this);
 	Weapon->SetInstigator(this);
+
+	Weapon->SetActorHiddenInGame(false);
+	Weapon->SetActorEnableCollision(true);
 
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	Weapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
@@ -256,4 +271,15 @@ void ACapstoneProjectCharacter::FireProjectileAt(AActor* Target)
 			Movement->Velocity = Direction * Movement->InitialSpeed;
 		}
 	}
+}
+
+void ACapstoneProjectCharacter::ServerRPC_SwapWeapon_Implementation(int32 WeaponIndex)
+{
+	
+}
+
+
+void ACapstoneProjectCharacter::SwapWeapon(int32 WeaponIndex)
+{
+	
 }
