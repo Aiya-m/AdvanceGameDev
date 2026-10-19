@@ -56,10 +56,20 @@ void AC_AICon_Healer::FindLowestHealthAlly()
 	for (AActor* Actor : AllCharacters)
 	{
 		ACapstoneProjectCharacter* Candidate = Cast<ACapstoneProjectCharacter>(Actor);
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("Candidate: %s | Team ID: %d"),
+			*Candidate->GetName(),
+			Candidate->GetGenericTeamId().GetId()
+		);
 		
 		if (!IsValid(Candidate) || Candidate == Healer){continue;}
 		
-		if (Candidate->GetGenericTeamId().GetId() == 1){continue;}
+		if (Candidate->IsPlayerControlled())
+		{
+			continue;
+		}
 		
 		UHealthComponent* HC = Candidate->FindComponentByClass<UHealthComponent>();
 		
