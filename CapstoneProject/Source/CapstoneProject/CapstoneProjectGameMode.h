@@ -30,6 +30,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Score")
 	void AddTeamScore(int32 Scores);
+	
+	UFUNCTION(BlueprintCallable, Category = "Rules")
+	void TravelToArena();
 };
 
 
