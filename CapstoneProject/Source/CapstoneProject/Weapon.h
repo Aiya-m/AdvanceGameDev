@@ -36,6 +36,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Reload();
 	
+	UFUNCTION(Server, BlueprintCallable, Category="Weapon", Reliable)
+	void Server_Reload();
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* RootComp;
 	
@@ -93,10 +96,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
 	int32 WeaponMagazine = 20;
 	
-	UPROPERTY(ReplicatedUsing = OnRep_Bullets, EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
+	UPROPERTY(ReplicatedUsing=OnRep_Bullets, EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
 	int32 bullets = WeaponMagazine;
 	
-	UPROPERTY(ReplicatedUsing = OnRep_SpareAmmo, EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
+	UPROPERTY(ReplicatedUsing=OnRep_SpareAmmo, EditAnywhere, BlueprintReadOnly, Category="Weapon Stats")
 	int32 SpareAmmo = 30;
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")

@@ -103,15 +103,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Combat")
 	void FireProjectileAt(AActor* Target);
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", Replicated)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", Replicated)
 	AWeapon* Weapon;
 	
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void SwapWeapon(int32 WeaponIndex);
-	
 protected:
-	UFUNCTION(Server, Reliable)
-	void ServerRPC_SwapWeapon(int32 WeaponIndex);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", ReplicatedUsing = OnRep_CurrentWeapon)
+	AWeapon* CurrentWeapon;
+
+	UFUNCTION()
+	void OnRep_CurrentWeapon();
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	

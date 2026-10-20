@@ -62,6 +62,11 @@ bool AWeapon::AddBullet(int32 bullet)
 
 void AWeapon::Reload()
 {
+	Server_Reload();
+}
+
+void AWeapon::Server_Reload_Implementation()
+{
 	if (WeaponName == "Pistol") {return;}
 	int requireAmmo = WeaponMagazine-bullets;
 	if (SpareAmmo >= requireAmmo)

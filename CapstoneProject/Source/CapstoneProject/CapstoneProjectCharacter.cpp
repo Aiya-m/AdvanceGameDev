@@ -22,7 +22,7 @@
 #include "Weapon.h"
 #include "CapstoneProjectGameMode.h"
 
-AWeapon* Weapon;
+// AWeapon* Weapon;
 
 ACapstoneProjectCharacter::ACapstoneProjectCharacter()
 {
@@ -69,6 +69,14 @@ ACapstoneProjectCharacter::ACapstoneProjectCharacter()
 	MeleeReach->SetGenerateOverlapEvents(true);
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+}
+
+void ACapstoneProjectCharacter::OnRep_CurrentWeapon()
+{
+	if (CurrentWeapon)
+	{
+		EquipWeapon(CurrentWeapon);
+	}
 }
 
 void ACapstoneProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -133,21 +141,16 @@ void ACapstoneProjectCharacter::Reload()
 void ACapstoneProjectCharacter::EquipWeapon(AWeapon* NewWeapon)
 {
 	if (!NewWeapon) return;
-	if (Weapon && Weapon != NewWeapon)
+	if (CurrentWeapon && CurrentWeapon != NewWeapon)
 	{
-		Weapon->SetActorHiddenInGame(true);
-		Weapon->SetActorEnableCollision(false);
+		CurrentWeapon->SetActorHiddenInGame(true);
 	}
 
-	Weapon = NewWeapon;
-	Weapon->SetOwner(this);
-	Weapon->SetInstigator(this);
+	CurrentWeapon = NewWeapon;
+	CurrentWeapon->SetActorHiddenInGame(false);
 
-	Weapon->SetActorHiddenInGame(false);
-	Weapon->SetActorEnableCollision(true);
-
-	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	Weapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
+	FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
+	CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("WeaponSocket"));
 }
 
 void ACapstoneProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -155,6 +158,7 @@ void ACapstoneProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ACapstoneProjectCharacter, Weapon);
+	DOREPLIFETIME(ACapstoneProjectCharacter, CurrentWeapon);
 }
 
 bool ACapstoneProjectCharacter::ServerMeleeAttack_Validate()
@@ -271,15 +275,4 @@ void ACapstoneProjectCharacter::FireProjectileAt(AActor* Target)
 			Movement->Velocity = Direction * Movement->InitialSpeed;
 		}
 	}
-}
-
-void ACapstoneProjectCharacter::ServerRPC_SwapWeapon_Implementation(int32 WeaponIndex)
-{
-	
-}
-
-
-void ACapstoneProjectCharacter::SwapWeapon(int32 WeaponIndex)
-{
-	
 }
