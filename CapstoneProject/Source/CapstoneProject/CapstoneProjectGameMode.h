@@ -27,6 +27,9 @@ public:
 	void RespawnPlayer(AController* ControllerToRespawn);
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Respawn Rules")
 	float RespawnDelay = 5.0f;
+	
+	UFUNCTION(BlueprintCallable, Category = "Score")
+	void AddTeamScore(int32 Scores);
 };
 
 
