@@ -45,6 +45,18 @@ void AProjectile::BulletMakeShot_Implementation(UPrimitiveComponent* HitComp, AA
 	if (OtherActor && OtherActor != this && OtherActor != GetInstigator())
 	{
 		AController* InstigatorController = GetInstigator() ? GetInstigator()->GetController() : nullptr;
+		
+		ACapstoneProjectCharacter* TargetCharacter = Cast<ACapstoneProjectCharacter>(OtherActor);
+		ACapstoneProjectCharacter* InstigatorCharacter = Cast<ACapstoneProjectCharacter>(GetInstigator());
+
+		if (TargetCharacter && InstigatorCharacter)
+		{
+			if (TargetCharacter->IsPlayerControlled() == InstigatorCharacter->IsPlayerControlled())
+			{
+				return;
+			}
+		}
+		
 		if (HasAuthority())
 		{
 			UGameplayStatics::ApplyDamage(

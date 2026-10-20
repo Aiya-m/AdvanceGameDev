@@ -125,10 +125,10 @@ void ACapstoneProjectCharacter::Tick(float DeltaSeconds)
 
 void ACapstoneProjectCharacter::OnAttack()
 {
-	if (Weapon)
+	if (CurrentWeapon)
 	{
 		UE_LOG(LogTemp, Error, TEXT("OnAttack"));
-		Weapon->StartFire();
+		CurrentWeapon->StartFire();
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this, BulletSoundRange, TEXT("Gun Shot"));
 	}
 	else
@@ -139,30 +139,34 @@ void ACapstoneProjectCharacter::OnAttack()
 
 void ACapstoneProjectCharacter::StopAttack()
 {
-	if (Weapon)
+	if (CurrentWeapon)
 	{
-		Weapon->StopFire();
+		CurrentWeapon->StopFire();
 	}
 }
 
 void ACapstoneProjectCharacter::Reload()
 {
-	Weapon->Reload();
+	CurrentWeapon->Reload();
 }
 
 void ACapstoneProjectCharacter::EquipWeapon(AWeapon* NewWeapon)
 {
 	if (!NewWeapon) return;
-	if (CurrentWeapon && CurrentWeapon != NewWeapon)
+	if (Weapon && Weapon != NewWeapon)
 	{
-		CurrentWeapon->SetActorHiddenInGame(true);
+		UE_LOG(LogTemp, Error, TEXT("hide weapon"));
+		Weapon->SetActorHiddenInGame(true);
 	}
+	
+	UE_LOG(LogTemp, Error, TEXT("change"));
 
-	CurrentWeapon = NewWeapon;
-	CurrentWeapon->SetActorHiddenInGame(false);
+	Weapon = NewWeapon;
+	CurrentWeapon = Weapon;
+	Weapon->SetActorHiddenInGame(false);
 
 	FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
-	CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("WeaponSocket"));
+	Weapon->AttachToComponent(GetMesh(), AttachRules, TEXT("WeaponSocket"));
 }
 
 void ACapstoneProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
