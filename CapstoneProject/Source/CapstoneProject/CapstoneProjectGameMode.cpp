@@ -48,3 +48,8 @@ void ACapstoneProjectGameMode::TravelToArena()
 {
 	GetWorld()->ServerTravel(TEXT("/Game/Maps/Battleground?listen"));
 }
+
+void ACapstoneProjectGameMode::TravelToLobby()
+{
+	GetWorld()->ServerTravel(TEXT("/Game/Maps/Lobby?listen"));
+}

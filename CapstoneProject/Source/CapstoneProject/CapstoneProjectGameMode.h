@@ -33,6 +33,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Rules")
 	void TravelToArena();
+	
+	UFUNCTION(BlueprintCallable, Category = "Rules")
+	void TravelToLobby();
 };
 
 
