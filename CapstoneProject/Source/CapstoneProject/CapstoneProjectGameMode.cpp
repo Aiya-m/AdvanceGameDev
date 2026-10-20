@@ -43,3 +43,8 @@ void ACapstoneProjectGameMode::AddTeamScore(int32 Scores)
 		GS->AddTeamScore(Scores);
 	}
 }
+
+void ACapstoneProjectGameMode::TravelToArena()
+{
+	GetWorld()->ServerTravel(TEXT("/Game/Maps/Battleground?listen"));
+}
